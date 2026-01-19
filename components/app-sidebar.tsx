@@ -1,21 +1,9 @@
 "use client"
 
 import * as React from "react"
-import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+import { AudioWaveform, Command, GalleryVerticalEnd } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
-import { NavProjects } from "@/components/nav-projects"
 import { NavUser } from "@/components/nav-user"
 import { TeamSwitcher } from "@/components/team-switcher"
 import {
@@ -26,132 +14,86 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 
-// This is sample data.
 const data = {
   user: {
-    name: "shadcn",
-    email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    name: "Steven McTradealot",
+    email: "s@wattxchange.com",
+    avatar: "/avatars/steven.jpg",
   },
   teams: [
     {
-      name: "Acme Inc",
+      name: "WattXchange",
       logo: GalleryVerticalEnd,
-      plan: "Enterprise",
+      plan: "Internal Dashboard",
     },
     {
-      name: "Acme Corp.",
+      name: "WattXchange #2",
       logo: AudioWaveform,
-      plan: "Startup",
+      plan: "Internal Dashboard",
     },
     {
-      name: "Evil Corp.",
+      name: "WattXchange #3",
       logo: Command,
-      plan: "Free",
+      plan: "Internal Dashboard",
     },
   ],
-  navMain: [
+  navAllParks: [
     {
-      title: "Playground",
+      title: "All Parks",
       url: "#",
-      icon: SquareTerminal,
       isActive: true,
       items: [
-        {
-          title: "History",
-          url: "#",
-        },
-        {
-          title: "Starred",
-          url: "#",
-        },
-        {
-          title: "Settings",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Models",
-      url: "#",
-      icon: Bot,
-      items: [
-        {
-          title: "Genesis",
-          url: "#",
-        },
-        {
-          title: "Explorer",
-          url: "#",
-        },
-        {
-          title: "Quantum",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Documentation",
-      url: "#",
-      icon: BookOpen,
-      items: [
-        {
-          title: "Introduction",
-          url: "#",
-        },
-        {
-          title: "Get Started",
-          url: "#",
-        },
-        {
-          title: "Tutorials",
-          url: "#",
-        },
-        {
-          title: "Changelog",
-          url: "#",
-        },
-      ],
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings2,
-      items: [
-        {
-          title: "General",
-          url: "#",
-        },
-        {
-          title: "Team",
-          url: "#",
-        },
-        {
-          title: "Billing",
-          url: "#",
-        },
-        {
-          title: "Limits",
-          url: "#",
-        },
+        { title: "Solar Total", url: "#all-parks-solar" },
+        { title: "Wind Total", url: "#all-parks-wind" },
+        { title: "Total Combined", url: "#all-parks-total" },
       ],
     },
   ],
-  projects: [
+  navIndividualParks: [
     {
-      name: "Design Engineering",
+      title: "Bemmel",
       url: "#",
-      icon: Frame,
+      items: [
+        { title: "Solar", url: "#bemmel-solar" },
+        { title: "Wind", url: "#bemmel-wind" },
+        { title: "Combined", url: "#bemmel-total" },
+      ],
     },
     {
-      name: "Sales & Marketing",
+      title: "Netterden",
       url: "#",
-      icon: PieChart,
+      items: [
+        { title: "Solar", url: "#netterden-solar" },
+        { title: "Wind", url: "#netterden-wind" },
+        { title: "Combined", url: "#netterden-total" },
+      ],
     },
     {
-      name: "Travel",
+      title: "Stadskanaal",
       url: "#",
-      icon: Map,
+      items: [
+        { title: "Solar", url: "#stadskanaal-solar" },
+        { title: "Wind", url: "#stadskanaal-wind" },
+        { title: "Combined", url: "#stadskanaal-total" },
+      ],
+    },
+    {
+      title: "Windskanaal",
+      url: "#",
+      items: [
+        { title: "Solar", url: "#windskanaal-solar" },
+        { title: "Wind", url: "#windskanaal-wind" },
+        { title: "Combined", url: "#windskanaal-total" },
+      ],
+    },
+    {
+      title: "Zwartenbergseweg",
+      url: "#",
+      items: [
+        { title: "Solar", url: "#zwartenbergseweg-solar" },
+        { title: "Wind", url: "#zwartenbergseweg-wind" },
+        { title: "Combined", url: "#zwartenbergseweg-total" },
+      ],
     },
   ],
 }
@@ -163,8 +105,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <TeamSwitcher teams={data.teams} />
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavProjects projects={data.projects} />
+        <NavMain label="All Parks" items={data.navAllParks} />
+        <NavMain label="Individual Parks" items={data.navIndividualParks} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
