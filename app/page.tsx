@@ -1,16 +1,22 @@
-import { typography } from "@/lib/design";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ModeToggle } from "@/components/mode-toggle";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-background">
-      <main className="container mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <header className="space-y-2">
-          <h1 className={typography.h1}>WattXchange</h1>
-          <p className={typography.lead}>
-            A unified dashboard for monitoring wind and solar energy production.
-          </p>
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2">
+            <SidebarTrigger className="-ml-1" />
+          </div>
+          <ModeToggle />
         </header>
-      </main>
-    </div>
+        <div className="flex flex-1 flex-col p-4 pt-0">
+          <div className="min-h-[100vh] flex-1 rounded-xl bg-muted/50 md:min-h-min" />
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
