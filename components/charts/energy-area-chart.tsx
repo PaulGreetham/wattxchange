@@ -27,24 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { colors } from "@/lib/design"
-
-type TimeRangeOption = {
-  value: string
-  label: string
-  start?: string
-  end?: string
-}
-
-type SeriesConfig = {
-  key: string
-  label: string
-  color?: string
-}
-
-type ChartDatum = {
-  date: string
-  [key: string]: number | string | undefined
-}
+import type { ChartDatum, SeriesConfig, TimeRangeOption } from "@/lib/charts/types"
 
 type EnergyAreaChartProps = {
   title: string
@@ -56,9 +39,7 @@ type EnergyAreaChartProps = {
   selectWidthClassName?: string
 }
 
-const defaultTimeRanges: TimeRangeOption[] = [
-  { value: "all", label: "All time" },
-]
+const defaultTimeRanges: TimeRangeOption[] = [{ value: "all", label: "All time" }]
 
 const seriesColorFallbacks: Record<string, string> = {
   wind: colors.wind,
