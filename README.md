@@ -1,36 +1,84 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# WattXchange
 
-## Getting Started
+WattXchange is an internal Next.js dashboard for monitoring solar and wind energy production across multiple parks. It processes CSV files, aggregates data hourly, and presents interactive charts and tables with filtering by quarter/year or custom date/time range.
 
-First, run the development server:
+## Features
+- Interactive area charts (solar, wind, combined) using shadcn/ui charts (Recharts).
+- Date/time filtering with a toggle between preset ranges (quarter/year) and custom date/time range.
+- Per-park and all-parks views (solar and wind).
+- Searchable, paginated data tables (TanStack Table) with totals.
+- Dark mode toggle.
+- GitHub Actions test workflow (Jest).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Tech Stack
+- Next.js 16 (App Router)
+- React 19
+- TypeScript
+- Tailwind CSS + shadcn/ui
+- Recharts
+- TanStack Table
+- PapaParse (CSV parsing)
+
+## Project Structure
+```
+app/
+  layout.tsx
+  page.tsx
+components/
+  app-sidebar.tsx
+  charts/energy-area-chart.tsx
+  filters/date-time-range-picker.tsx
+  tables/energy-data-table.tsx
+  ui/...
+lib/
+  charts/
+    types.ts
+    utils.ts
+  design.ts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Filtering Behavior
+Each chart has a toggle:
+- **Preset**: quarters + full years (from available data).
+- **Date/time range**: choose single day or range with times.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The filter applies to both the chart and its table.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Getting Started
+Install dependencies and run the dev server:
+```bash
+npm install
+npm run dev
+```
 
-## Learn More
+Open http://localhost:3000
 
-To learn more about Next.js, take a look at the following resources:
+## Scripts
+```bash
+npm run dev      # start dev server
+npm run build    # production build
+npm run start    # start production server
+npm run lint     # lint
+npm run test     # jest unit tests
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tests
+Jest + Testing Library are configured. Run:
+```bash
+npm run test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Tests live in `__tests__/` and currently cover chart utilities.
 
-## Deploy on Vercel
+## Deployment
+The app is compatible with AWS Amplify or Vercel.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### AWS Amplify
+- Connect the GitHub repo.
+- Amplify will run `npm ci` and `npm run build`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### GitHub Actions
+A workflow is included at `.github/workflows/tests.yml` to run `npm test` on pushes/PRs.
+
+## License
+Internal use only.
