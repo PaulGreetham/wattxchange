@@ -8,6 +8,7 @@ import { EnergyAreaChart } from "@/components/charts/energy-area-chart"
 import { type DateTimeRangeValue } from "@/components/filters/date-time-range-picker"
 import { EnergyDataTable } from "@/components/tables/energy-data-table"
 import { ModeToggle } from "@/components/mode-toggle"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates, aggregateHourly } from "@/lib/charts/utils"
 import { colors } from "@/lib/design"
@@ -272,7 +273,35 @@ export default function Home() {
                 />
               </div>
             ) : null
-          ) : null}
+          ) : (
+            <Card className="pt-0">
+              <CardHeader className="border-b py-5">
+                <CardTitle>Welcome to WattXchange</CardTitle>
+                <CardDescription>
+                  An internal dashboard for monitoring solar and wind production across all parks.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">How to use the dashboard</p>
+                  <ul className="text-muted-foreground space-y-2 text-sm">
+                    <li>- Use the left navigation to choose All Parks totals or a specific park.</li>
+                    <li>- Each selection shows an interactive chart and the underlying data table.</li>
+                    <li>- Switch between preset quarters/years or a custom date/time range.</li>
+                    <li>- Search and paginate the table to inspect hourly values.</li>
+                  </ul>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-foreground">Key features</p>
+                  <ul className="text-muted-foreground space-y-2 text-sm">
+                    <li>- Solar and wind data segmented by park and combined totals.</li>
+                    <li>- Date/time range filtering with hourly granularity.</li>
+                    <li>- Dark mode toggle in the top-right corner.</li>
+                  </ul>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </SidebarInset>
     </SidebarProvider>
