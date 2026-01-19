@@ -36,6 +36,12 @@ export type EnergyTableRow = {
   wind?: number
 }
 
+function formatNumber(value: number) {
+  const rounded = Number(value.toFixed(2))
+  const normalized = Object.is(rounded, -0) ? 0 : rounded
+  return normalized.toFixed(2)
+}
+
 type EnergyDataTableProps = {
   data: EnergyTableRow[]
   showSolar: boolean
@@ -57,7 +63,7 @@ function buildColumns(showSolar: boolean, showWind: boolean): ColumnDef<EnergyTa
       header: () => <div className="text-right">Solar Data (MW)</div>,
       cell: ({ row }) => {
         const value = Number(row.getValue("solar") ?? 0)
-        return <div className="text-right tabular-nums">{value.toFixed(2)}</div>
+        return <div className="text-right tabular-nums">{formatNumber(value)}</div>
       },
     })
   }
@@ -68,7 +74,20 @@ function buildColumns(showSolar: boolean, showWind: boolean): ColumnDef<EnergyTa
       header: () => <div className="text-right">Wind Data (MW)</div>,
       cell: ({ row }) => {
         const value = Number(row.getValue("wind") ?? 0)
-        return <div className="text-right tabular-nums">{value.toFixed(2)}</div>
+        return <div className="text-right tabular-nums">{formatNumber(value)}</div>
+      },
+    })
+  }
+
+  if (showSolar && showWind) {
+    columns.push({
+      id: "total",
+      header: () => <div className="text-right">Total Energy (MW)</div>,
+      cell: ({ row }) => {
+        const solar = Number(row.getValue("solar") ?? 0)
+        const wind = Number(row.getValue("wind") ?? 0)
+        const total = solar + wind
+        return <div className="text-right font-semibold tabular-nums">{formatNumber(total)}</div>
       },
     })
   }
