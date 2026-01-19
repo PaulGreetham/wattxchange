@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DateTimeRangePicker, type DateTimeRangeValue } from "@/components/filters/date-time-range-picker"
 import { colors } from "@/lib/design"
 import type { ChartDatum, SeriesConfig, TimeRangeOption } from "@/lib/charts/types"
 
@@ -35,7 +36,10 @@ type EnergyAreaChartProps = {
   data: ChartDatum[]
   series: SeriesConfig[]
   timeRanges?: TimeRangeOption[]
-  defaultTimeRange?: string
+  timeRange?: string
+  onTimeRangeChange?: (value: string) => void
+  dateTimeRange: DateTimeRangeValue
+  onDateTimeRangeChange: (value: DateTimeRangeValue) => void
   selectWidthClassName?: string
 }
 
@@ -52,27 +56,13 @@ export function EnergyAreaChart({
   data,
   series,
   timeRanges = defaultTimeRanges,
-  defaultTimeRange = "all",
+  timeRange = "all",
+  onTimeRangeChange,
+  dateTimeRange,
+  onDateTimeRangeChange,
   selectWidthClassName = "w-[200px]",
 }: EnergyAreaChartProps) {
-  const [timeRange, setTimeRange] = React.useState(defaultTimeRange)
-
-  const filteredData = React.useMemo(() => {
-    if (!timeRanges.length || timeRange === "all") return data
-
-    const range = timeRanges.find((option) => option.value === timeRange)
-    if (!range || (!range.start && !range.end)) return data
-
-    const start = range.start ? parseISO(range.start) : null
-    const end = range.end ? parseISO(range.end) : null
-
-    return data.filter((item) => {
-      const date = parseISO(String(item.date))
-      if (start && date < start) return false
-      if (end && date > end) return false
-      return true
-    })
-  }, [data, timeRange, timeRanges])
+  const handleTimeRangeChange = onTimeRangeChange ?? (() => {})
 
   const chartConfig = React.useMemo(() => {
     return series.reduce<ChartConfig>((acc, item) => {
@@ -86,32 +76,35 @@ export function EnergyAreaChart({
 
   return (
     <Card className="pt-0">
-      <CardHeader className="flex items-center gap-2 space-y-0 border-b py-5 sm:flex-row">
+      <CardHeader className="flex flex-col gap-3 space-y-0 border-b py-5 sm:flex-row sm:items-center">
         <div className="grid flex-1 gap-1">
           <CardTitle>{title}</CardTitle>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </div>
-        {timeRanges.length > 1 ? (
-          <Select value={timeRange} onValueChange={setTimeRange}>
-            <SelectTrigger
-              className={`hidden ${selectWidthClassName} rounded-lg sm:ml-auto sm:flex`}
-              aria-label="Select a value"
-            >
-              <SelectValue placeholder={timeRanges[0]?.label ?? "All time"} />
-            </SelectTrigger>
-            <SelectContent className="rounded-xl">
-              {timeRanges.map((option) => (
-                <SelectItem key={option.value} value={option.value} className="rounded-lg">
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        ) : null}
+        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
+          {timeRanges.length > 1 ? (
+            <Select value={timeRange} onValueChange={handleTimeRangeChange}>
+              <SelectTrigger
+                className={`hidden ${selectWidthClassName} rounded-lg sm:ml-auto sm:flex`}
+                aria-label="Select a value"
+              >
+                <SelectValue placeholder={timeRanges[0]?.label ?? "All time"} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                {timeRanges.map((option) => (
+                  <SelectItem key={option.value} value={option.value} className="rounded-lg">
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : null}
+          <DateTimeRangePicker value={dateTimeRange} onChange={onDateTimeRangeChange} />
+        </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
         <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
-          <AreaChart data={filteredData}>
+          <AreaChart data={data}>
             <defs>
               {series.map((item) => {
                 const color = item.color ?? seriesColorFallbacks[item.key] ?? "var(--chart-1)"
@@ -136,7 +129,7 @@ export function EnergyAreaChart({
               cursor={false}
               content={
                 <ChartTooltipContent
-                  labelFormatter={(value) => format(parseISO(String(value)), "MMM d, yyyy")}
+                  labelFormatter={(value) => format(parseISO(String(value)), "MMM d, yyyy HH:mm")}
                   indicator="dot"
                 />
               }

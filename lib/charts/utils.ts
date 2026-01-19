@@ -1,6 +1,6 @@
 import { format, parseISO, startOfHour } from "date-fns"
 
-import type { ChartDatum, TimeRangeOption } from "@/lib/charts/types"
+import type { ChartDatum, DateTimeRange, TimeRangeOption } from "@/lib/charts/types"
 
 type Reading = {
   datetime: string
@@ -79,5 +79,47 @@ export function buildTimeRangesFromDates(dates: string[]): TimeRangeOption[] {
   })
 
   return ranges
+}
+
+export function applyTimeRangeFilter(
+  data: ChartDatum[],
+  timeRange: string,
+  timeRanges: TimeRangeOption[]
+) {
+  if (!timeRanges.length || timeRange === "all") return data
+  const range = timeRanges.find((option) => option.value === timeRange)
+  if (!range || (!range.start && !range.end)) return data
+
+  const start = range.start ? parseISO(range.start) : null
+  const end = range.end ? parseISO(range.end) : null
+
+  return data.filter((item) => {
+    const date = parseISO(String(item.date))
+    if (start && date < start) return false
+    if (end && date > end) return false
+    return true
+  })
+}
+
+function toDateTime(date: Date, time?: string, fallback: "start" | "end" = "start") {
+  const [hours, minutes] = (time ?? "").split(":").map(Number)
+  const resolvedHours = Number.isFinite(hours) ? hours : fallback === "start" ? 0 : 23
+  const resolvedMinutes = Number.isFinite(minutes) ? minutes : fallback === "start" ? 0 : 59
+  const result = new Date(date)
+  result.setHours(resolvedHours, resolvedMinutes, 0, 0)
+  return result
+}
+
+export function applyDateTimeRangeFilter(data: ChartDatum[], range?: DateTimeRange) {
+  if (!range?.from) return data
+
+  const startDate = toDateTime(range.from, range.fromTime, "start")
+  const endBase = range.mode === "single" ? range.from : range.to ?? range.from
+  const endDate = toDateTime(endBase, range.toTime, "end")
+
+  return data.filter((item) => {
+    const date = parseISO(String(item.date))
+    return date >= startDate && date <= endDate
+  })
 }
 

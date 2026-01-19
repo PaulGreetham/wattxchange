@@ -16,3 +16,11 @@ export type ChartDatum = {
   [key: string]: number | string | undefined
 }
 
+export type DateTimeRange = {
+  mode: "single" | "range"
+  from?: Date
+  to?: Date
+  fromTime?: string
+  toTime?: string
+}
+

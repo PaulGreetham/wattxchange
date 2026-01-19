@@ -5,10 +5,11 @@ import Papa from "papaparse"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { EnergyAreaChart } from "@/components/charts/energy-area-chart"
+import { type DateTimeRangeValue } from "@/components/filters/date-time-range-picker"
 import { EnergyDataTable } from "@/components/tables/energy-data-table"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { buildTimeRangesFromDates, aggregateHourly } from "@/lib/charts/utils"
+import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates, aggregateHourly } from "@/lib/charts/utils"
 import { colors } from "@/lib/design"
 
 type ParkInfo = {
@@ -48,6 +49,10 @@ export default function Home() {
   const [activeHash, setActiveHash] = React.useState<string>("")
   const [chartData, setChartData] = React.useState<{ date: string; solar?: number; wind?: number }[]>([])
   const [timeRanges, setTimeRanges] = React.useState<{ value: string; label: string; start?: string; end?: string }[]>([])
+  const [timeRange, setTimeRange] = React.useState("all")
+  const [dateTimeRange, setDateTimeRange] = React.useState<DateTimeRangeValue>({
+    mode: "range",
+  })
   const [parkName, setParkName] = React.useState<string>("")
   const [loading, setLoading] = React.useState(true)
 
@@ -180,8 +185,15 @@ export default function Home() {
       }
     }
 
+    setTimeRange("all")
+    setDateTimeRange({ mode: "range" })
     loadPark()
   }, [activeHash])
+
+  const filteredData = React.useMemo(() => {
+    const timeFiltered = applyTimeRangeFilter(chartData, timeRange, timeRanges)
+    return applyDateTimeRangeFilter(timeFiltered, dateTimeRange)
+  }, [chartData, timeRange, timeRanges, dateTimeRange])
 
   return (
     <SidebarProvider>
@@ -208,7 +220,7 @@ export default function Home() {
                       ? "Combined solar and wind production over time"
                       : `${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"} production over time`
                   }
-                  data={chartData}
+                  data={filteredData}
                   series={
                     allParksHashToMode[activeHash] === "combined"
                       ? [
@@ -233,11 +245,14 @@ export default function Home() {
                         ]
                   }
                   timeRanges={timeRanges}
-                  defaultTimeRange="all"
+                  timeRange={timeRange}
+                  onTimeRangeChange={setTimeRange}
+                  dateTimeRange={dateTimeRange}
+                  onDateTimeRangeChange={setDateTimeRange}
                   selectWidthClassName="w-[220px]"
                 />
                 <EnergyDataTable
-                  data={chartData}
+                  data={filteredData}
                   showSolar={
                     allParksHashToMode[activeHash] === "combined" ||
                     Boolean(solarHashToPark[activeHash]) ||
