@@ -5,6 +5,7 @@ import Papa from "papaparse"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { EnergyAreaChart } from "@/components/charts/energy-area-chart"
+import { EnergyDataTable } from "@/components/tables/energy-data-table"
 import { ModeToggle } from "@/components/mode-toggle"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { buildTimeRangesFromDates, aggregateHourly } from "@/lib/charts/utils"
@@ -195,45 +196,60 @@ export default function Home() {
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {solarHashToPark[activeHash] || windHashToPark[activeHash] || allParksHashToMode[activeHash] ? (
             loading ? null : chartData.length ? (
-              <EnergyAreaChart
-                title={
-                  allParksHashToMode[activeHash] === "combined"
-                    ? `${parkName} — Total Combined`
-                    : `${parkName} — ${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"}`
-                }
-                description={
-                  allParksHashToMode[activeHash] === "combined"
-                    ? "Combined solar and wind production over time"
-                    : `${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"} production over time`
-                }
-                data={chartData}
-                series={
-                  allParksHashToMode[activeHash] === "combined"
-                    ? [
-                        { key: "solar", label: "Solar Data", color: colors.solar },
-                        { key: "wind", label: "Wind Data", color: colors.wind },
-                      ]
-                    : [
-                        {
-                          key:
-                            solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
-                              ? "solar"
-                              : "wind",
-                          label:
-                            solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
-                              ? "Solar Data"
-                              : "Wind Data",
-                          color:
-                            solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
-                              ? colors.solar
-                              : colors.wind,
-                        },
-                      ]
-                }
-                timeRanges={timeRanges}
-                defaultTimeRange="all"
-                selectWidthClassName="w-[220px]"
-              />
+              <div className="space-y-6">
+                <EnergyAreaChart
+                  title={
+                    allParksHashToMode[activeHash] === "combined"
+                      ? `${parkName} — Total Combined`
+                      : `${parkName} — ${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"}`
+                  }
+                  description={
+                    allParksHashToMode[activeHash] === "combined"
+                      ? "Combined solar and wind production over time"
+                      : `${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"} production over time`
+                  }
+                  data={chartData}
+                  series={
+                    allParksHashToMode[activeHash] === "combined"
+                      ? [
+                          { key: "solar", label: "Solar Data", color: colors.solar },
+                          { key: "wind", label: "Wind Data", color: colors.wind },
+                        ]
+                      : [
+                          {
+                            key:
+                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                                ? "solar"
+                                : "wind",
+                            label:
+                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                                ? "Solar Data"
+                                : "Wind Data",
+                            color:
+                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                                ? colors.solar
+                                : colors.wind,
+                          },
+                        ]
+                  }
+                  timeRanges={timeRanges}
+                  defaultTimeRange="all"
+                  selectWidthClassName="w-[220px]"
+                />
+                <EnergyDataTable
+                  data={chartData}
+                  showSolar={
+                    allParksHashToMode[activeHash] === "combined" ||
+                    Boolean(solarHashToPark[activeHash]) ||
+                    allParksHashToMode[activeHash] === "solar"
+                  }
+                  showWind={
+                    allParksHashToMode[activeHash] === "combined" ||
+                    Boolean(windHashToPark[activeHash]) ||
+                    allParksHashToMode[activeHash] === "wind"
+                  }
+                />
+              </div>
             ) : null
           ) : null}
         </div>
