@@ -100,12 +100,11 @@ export function DateTimeRangePicker({ value, onChange }: DateTimeRangePickerProp
             </SelectContent>
           </Select>
 
-          <Calendar
-            mode={value.mode === "single" ? "single" : "range"}
-            selected={value.mode === "single" ? value.from : range}
-            onSelect={(selection) => {
-              if (value.mode === "single") {
-                const date = selection as Date | undefined
+          {value.mode === "single" ? (
+            <Calendar
+              mode="single"
+              selected={value.from}
+              onSelect={(date) => {
                 onChange({
                   ...value,
                   from: date,
@@ -113,22 +112,30 @@ export function DateTimeRangePicker({ value, onChange }: DateTimeRangePickerProp
                   fromTime: value.fromTime ?? "00:00",
                   toTime: value.toTime ?? "23:59",
                 })
-                return
-              }
-              const nextRange = selection as DateRange | undefined
-              setRange(nextRange)
-              onChange({
-                ...value,
-                from: nextRange?.from,
-                to: nextRange?.to,
-                fromTime: nextRange?.from ? value.fromTime ?? "00:00" : value.fromTime,
-                toTime: nextRange?.to ? value.toTime ?? "23:59" : value.toTime,
-              })
-            }}
-            numberOfMonths={value.mode === "range" ? 2 : 1}
-            className="rounded-lg border"
-            captionLayout="dropdown"
-          />
+              }}
+              numberOfMonths={1}
+              className="rounded-lg border"
+              captionLayout="dropdown"
+            />
+          ) : (
+            <Calendar
+              mode="range"
+              selected={range}
+              onSelect={(nextRange) => {
+                setRange(nextRange)
+                onChange({
+                  ...value,
+                  from: nextRange?.from,
+                  to: nextRange?.to,
+                  fromTime: nextRange?.from ? value.fromTime ?? "00:00" : value.fromTime,
+                  toTime: nextRange?.to ? value.toTime ?? "23:59" : value.toTime,
+                })
+              }}
+              numberOfMonths={2}
+              className="rounded-lg border"
+              captionLayout="dropdown"
+            />
+          )}
 
           <div className="grid gap-3">
             <div className="flex items-center gap-2">
