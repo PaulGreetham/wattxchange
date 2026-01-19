@@ -26,6 +26,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { Label } from "@/components/ui/label"
 import { DateTimeRangePicker, type DateTimeRangeValue } from "@/components/filters/date-time-range-picker"
 import { colors } from "@/lib/design"
 import type { ChartDatum, SeriesConfig, TimeRangeOption } from "@/lib/charts/types"
@@ -40,6 +42,8 @@ type EnergyAreaChartProps = {
   onTimeRangeChange?: (value: string) => void
   dateTimeRange: DateTimeRangeValue
   onDateTimeRangeChange: (value: DateTimeRangeValue) => void
+  filterMode: "preset" | "dateTime"
+  onFilterModeChange: (mode: "preset" | "dateTime") => void
   selectWidthClassName?: string
 }
 
@@ -60,9 +64,12 @@ export function EnergyAreaChart({
   onTimeRangeChange,
   dateTimeRange,
   onDateTimeRangeChange,
+  filterMode,
+  onFilterModeChange,
   selectWidthClassName = "w-[200px]",
 }: EnergyAreaChartProps) {
   const handleTimeRangeChange = onTimeRangeChange ?? (() => {})
+  const filterSwitchId = React.useId()
 
   const chartConfig = React.useMemo(() => {
     return series.reduce<ChartConfig>((acc, item) => {
@@ -81,8 +88,20 @@ export function EnergyAreaChart({
           <CardTitle>{title}</CardTitle>
           {description ? <CardDescription>{description}</CardDescription> : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2 sm:ml-auto">
-          {timeRanges.length > 1 ? (
+        <div className="flex flex-wrap items-center gap-3 sm:ml-auto">
+          <div className="flex items-center gap-2">
+            <Switch
+              id={filterSwitchId}
+              checked={filterMode === "dateTime"}
+              onCheckedChange={(checked) =>
+                onFilterModeChange(checked ? "dateTime" : "preset")
+              }
+            />
+            <Label htmlFor={filterSwitchId} className="text-muted-foreground">
+              Toggle Date Filter
+            </Label>
+          </div>
+          {filterMode === "preset" && timeRanges.length > 1 ? (
             <Select value={timeRange} onValueChange={handleTimeRangeChange}>
               <SelectTrigger
                 className={`hidden ${selectWidthClassName} rounded-lg sm:ml-auto sm:flex`}
@@ -99,7 +118,9 @@ export function EnergyAreaChart({
               </SelectContent>
             </Select>
           ) : null}
-          <DateTimeRangePicker value={dateTimeRange} onChange={onDateTimeRangeChange} />
+          {filterMode === "dateTime" ? (
+            <DateTimeRangePicker value={dateTimeRange} onChange={onDateTimeRangeChange} />
+          ) : null}
         </div>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">

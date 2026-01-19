@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import Papa from "papaparse"
-import { AudioWaveform, Command, GalleryVerticalEnd, Sun, Wind, Zap } from "lucide-react"
+import { Zap, Sun, Wind } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -30,17 +30,17 @@ const data = {
   teams: [
     {
       name: "WattXchange",
-      logo: GalleryVerticalEnd,
+      logo: Zap,
       plan: "Internal Dashboard",
     },
     {
       name: "WattXchange #2",
-      logo: AudioWaveform,
+      logo: Zap,
       plan: "Internal Dashboard",
     },
     {
       name: "WattXchange #3",
-      logo: Command,
+      logo: Zap,
       plan: "Internal Dashboard",
     },
   ],

@@ -53,6 +53,7 @@ export default function Home() {
   const [dateTimeRange, setDateTimeRange] = React.useState<DateTimeRangeValue>({
     mode: "range",
   })
+  const [filterMode, setFilterMode] = React.useState<"preset" | "dateTime">("preset")
   const [parkName, setParkName] = React.useState<string>("")
   const [loading, setLoading] = React.useState(true)
 
@@ -187,13 +188,16 @@ export default function Home() {
 
     setTimeRange("all")
     setDateTimeRange({ mode: "range" })
+    setFilterMode("preset")
     loadPark()
   }, [activeHash])
 
   const filteredData = React.useMemo(() => {
-    const timeFiltered = applyTimeRangeFilter(chartData, timeRange, timeRanges)
-    return applyDateTimeRangeFilter(timeFiltered, dateTimeRange)
-  }, [chartData, timeRange, timeRanges, dateTimeRange])
+    if (filterMode === "dateTime") {
+      return applyDateTimeRangeFilter(chartData, dateTimeRange)
+    }
+    return applyTimeRangeFilter(chartData, timeRange, timeRanges)
+  }, [chartData, timeRange, timeRanges, dateTimeRange, filterMode])
 
   return (
     <SidebarProvider>
@@ -249,6 +253,8 @@ export default function Home() {
                   onTimeRangeChange={setTimeRange}
                   dateTimeRange={dateTimeRange}
                   onDateTimeRangeChange={setDateTimeRange}
+                  filterMode={filterMode}
+                  onFilterModeChange={setFilterMode}
                   selectWidthClassName="w-[220px]"
                 />
                 <EnergyDataTable
