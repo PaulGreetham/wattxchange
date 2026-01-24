@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useSearchParams } from "next/navigation"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { EnergyAreaChart } from "@/components/charts/energy-area-chart"
@@ -11,31 +12,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates } from "@/lib/charts/utils"
 import { colors } from "@/lib/design"
+import { solarHashToPark, windHashToPark } from "@/lib/parks"
 
 const allParksHashToMode: Record<string, "solar" | "wind" | "combined"> = {
-  "#all-parks-solar": "solar",
-  "#all-parks-wind": "wind",
-  "#all-parks-total": "combined",
-}
-
-const solarHashToPark: Record<string, string> = {
-  "#bemmel-solar": "Bemmel",
-  "#netterden-solar": "Netterden",
-  "#stadskanaal-solar": "Stadskanaal",
-  "#windskanaal-solar": "Windskanaal",
-  "#zwartenbergseweg-solar": "Zwartenbergseweg",
-}
-
-const windHashToPark: Record<string, string> = {
-  "#bemmel-wind": "Bemmel",
-  "#netterden-wind": "Netterden",
-  "#stadskanaal-wind": "Stadskanaal",
-  "#windskanaal-wind": "Windskanaal",
-  "#zwartenbergseweg-wind": "Zwartenbergseweg",
+  "all-parks-solar": "solar",
+  "all-parks-wind": "wind",
+  "all-parks-total": "combined",
 }
 
 export default function Home() {
-  const [activeHash, setActiveHash] = React.useState<string>("")
+  const searchParams = useSearchParams()
+  const [hashKey, setHashKey] = React.useState("")
   const [chartData, setChartData] = React.useState<{ date: string; solar?: number; wind?: number }[]>([])
   const [timeRanges, setTimeRanges] = React.useState<{ value: string; label: string; start?: string; end?: string }[]>([])
   const [timeRange, setTimeRange] = React.useState("all")
@@ -48,7 +35,7 @@ export default function Home() {
 
   React.useEffect(() => {
     function updateHash() {
-      setActiveHash(window.location.hash)
+      setHashKey(window.location.hash.replace(/^#/, ""))
     }
 
     updateHash()
@@ -56,11 +43,13 @@ export default function Home() {
     return () => window.removeEventListener("hashchange", updateHash)
   }, [])
 
+  const activeKey = searchParams.get("view") ?? hashKey
+
   React.useEffect(() => {
     async function loadPark() {
-      const selectedSolarPark = solarHashToPark[activeHash]
-      const selectedWindPark = windHashToPark[activeHash]
-      const allParksMode = allParksHashToMode[activeHash]
+      const selectedSolarPark = solarHashToPark[activeKey]
+      const selectedWindPark = windHashToPark[activeKey]
+      const allParksMode = allParksHashToMode[activeKey]
       const selectedPark = selectedSolarPark ?? selectedWindPark
       const selectedMetric = selectedSolarPark ? "solar" : selectedWindPark ? "wind" : null
 
@@ -102,7 +91,7 @@ export default function Home() {
     setDateTimeRange({ mode: "range" })
     setFilterMode("preset")
     loadPark()
-  }, [activeHash])
+  }, [activeKey])
 
   const filteredData = React.useMemo(() => {
     if (filterMode === "dateTime") {
@@ -122,23 +111,23 @@ export default function Home() {
           <ModeToggle />
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          {solarHashToPark[activeHash] || windHashToPark[activeHash] || allParksHashToMode[activeHash] ? (
+          {solarHashToPark[activeKey] || windHashToPark[activeKey] || allParksHashToMode[activeKey] ? (
             loading ? null : chartData.length ? (
               <div className="space-y-6">
                 <EnergyAreaChart
                   title={
-                    allParksHashToMode[activeHash] === "combined"
+                    allParksHashToMode[activeKey] === "combined"
                       ? `${parkName} — Total Combined`
-                      : `${parkName} — ${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"}`
+                      : `${parkName} — ${solarHashToPark[activeKey] || allParksHashToMode[activeKey] === "solar" ? "Solar Data" : "Wind Data"}`
                   }
                   description={
-                    allParksHashToMode[activeHash] === "combined"
+                    allParksHashToMode[activeKey] === "combined"
                       ? "Combined solar and wind production over time"
-                      : `${solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar" ? "Solar Data" : "Wind Data"} production over time`
+                      : `${solarHashToPark[activeKey] || allParksHashToMode[activeKey] === "solar" ? "Solar Data" : "Wind Data"} production over time`
                   }
                   data={filteredData}
                   series={
-                    allParksHashToMode[activeHash] === "combined"
+                    allParksHashToMode[activeKey] === "combined"
                       ? [
                           { key: "solar", label: "Solar Data", color: colors.solar },
                           { key: "wind", label: "Wind Data", color: colors.wind },
@@ -146,15 +135,15 @@ export default function Home() {
                       : [
                           {
                             key:
-                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                              solarHashToPark[activeKey] || allParksHashToMode[activeKey] === "solar"
                                 ? "solar"
                                 : "wind",
                             label:
-                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                              solarHashToPark[activeKey] || allParksHashToMode[activeKey] === "solar"
                                 ? "Solar Data"
                                 : "Wind Data",
                             color:
-                              solarHashToPark[activeHash] || allParksHashToMode[activeHash] === "solar"
+                              solarHashToPark[activeKey] || allParksHashToMode[activeKey] === "solar"
                                 ? colors.solar
                                 : colors.wind,
                           },
@@ -172,14 +161,14 @@ export default function Home() {
                 <EnergyDataTable
                   data={filteredData}
                   showSolar={
-                    allParksHashToMode[activeHash] === "combined" ||
-                    Boolean(solarHashToPark[activeHash]) ||
-                    allParksHashToMode[activeHash] === "solar"
+                    allParksHashToMode[activeKey] === "combined" ||
+                    Boolean(solarHashToPark[activeKey]) ||
+                    allParksHashToMode[activeKey] === "solar"
                   }
                   showWind={
-                    allParksHashToMode[activeHash] === "combined" ||
-                    Boolean(windHashToPark[activeHash]) ||
-                    allParksHashToMode[activeHash] === "wind"
+                    allParksHashToMode[activeKey] === "combined" ||
+                    Boolean(windHashToPark[activeKey]) ||
+                    allParksHashToMode[activeKey] === "wind"
                   }
                 />
               </div>

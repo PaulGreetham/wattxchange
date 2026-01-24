@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Papa from "papaparse"
 import { Zap, Sun, Wind } from "lucide-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -14,18 +13,13 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar"
-
-type ParkInfo = {
-  park_name: string
-  timezone: string
-  energy_type: "Wind" | "Solar"
-}
+import { solarParks, windParks } from "@/lib/parks"
 
 const data = {
   user: {
     name: "Steven McTradealot",
     email: "s@wattxchange.com",
-    avatar: "/avatars/steven.jpg",
+    avatar: "",
   },
   teams: [
     {
@@ -47,68 +41,45 @@ const data = {
   navAllParks: [
     {
       title: "All Parks",
-      url: "#",
+      url: "/",
       isActive: true,
       icon: Zap,
       items: [
-        { title: "Solar Data Total", url: "#all-parks-solar" },
-        { title: "Wind Data Total", url: "#all-parks-wind" },
-        { title: "Total Combined", url: "#all-parks-total" },
+        { title: "Solar Data Total", url: "/?view=all-parks-solar" },
+        { title: "Wind Data Total", url: "/?view=all-parks-wind" },
+        { title: "Total Combined", url: "/?view=all-parks-total" },
       ],
     },
   ],
-  navIndividualParks: [],
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [solarParks, setSolarParks] = React.useState<
-    { title: string; url: string; items: { title: string; url: string }[] }[]
-  >([])
-  const [windParks, setWindParks] = React.useState<
-    { title: string; url: string; items: { title: string; url: string }[] }[]
-  >([])
+  const toHash = (parkName: string, type: "solar" | "wind") =>
+    `${parkName.toLowerCase()}-${type}`
 
-  React.useEffect(() => {
-    async function loadParks() {
-      try {
-        const response = await fetch("/data/park_info.csv")
-        const text = await response.text()
-        const parsed = Papa.parse<ParkInfo>(text, {
-          header: true,
-          skipEmptyLines: true,
-        })
-        const parks = parsed.data as ParkInfo[]
+  const solarItems = solarParks.map((park) => ({
+    title: park.name,
+    url: "/",
+    icon: Sun,
+    items: [
+      {
+        title: "Solar Data",
+        url: `/?view=${toHash(park.name, "solar")}`,
+      },
+    ],
+  }))
 
-        const toHash = (parkName: string, type: "solar" | "wind") =>
-          `#${parkName.toLowerCase()}-${type}`
-
-        const solar = parks
-          .filter((park) => park.energy_type === "Solar")
-          .map((park) => ({
-            title: park.park_name,
-            url: "#",
-            icon: Sun,
-            items: [{ title: "Solar Data", url: toHash(park.park_name, "solar") }],
-          }))
-
-        const wind = parks
-          .filter((park) => park.energy_type === "Wind")
-          .map((park) => ({
-            title: park.park_name,
-            url: "#",
-            icon: Wind,
-            items: [{ title: "Wind Data", url: toHash(park.park_name, "wind") }],
-          }))
-
-        setSolarParks(solar)
-        setWindParks(wind)
-      } catch (error) {
-        console.error("Failed to load parks for sidebar", error)
-      }
-    }
-
-    loadParks()
-  }, [])
+  const windItems = windParks.map((park) => ({
+    title: park.name,
+    url: "/",
+    icon: Wind,
+    items: [
+      {
+        title: "Wind Data",
+        url: `/?view=${toHash(park.name, "wind")}`,
+      },
+    ],
+  }))
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -117,8 +88,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent>
         <NavMain label="All Parks" items={data.navAllParks} />
-        <NavMain label="Solar Parks" items={solarParks} />
-        <NavMain label="Wind Parks" items={windParks} />
+        <NavMain label="Solar Parks" items={solarItems} />
+        <NavMain label="Wind Parks" items={windItems} />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

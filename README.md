@@ -17,7 +17,6 @@ WattXchange is an internal Next.js dashboard for monitoring solar and wind energ
 - Tailwind CSS + shadcn/ui
 - Recharts
 - TanStack Table
-- PapaParse (CSV parsing)
 
 ## Project Structure
 ```
