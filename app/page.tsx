@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Papa from "papaparse"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { EnergyAreaChart } from "@/components/charts/energy-area-chart"
@@ -10,19 +9,8 @@ import { EnergyDataTable } from "@/components/tables/energy-data-table"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates, aggregateHourly } from "@/lib/charts/utils"
+import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates } from "@/lib/charts/utils"
 import { colors } from "@/lib/design"
-
-type ParkInfo = {
-  park_name: string
-  timezone: string
-  energy_type: "Wind" | "Solar"
-}
-
-type EnergyReading = {
-  datetime: string
-  MW: number
-}
 
 const allParksHashToMode: Record<string, "solar" | "wind" | "combined"> = {
   "#all-parks-solar": "solar",
@@ -86,100 +74,23 @@ export default function Home() {
 
       setLoading(true)
       try {
-        const parkInfoResponse = await fetch("/data/park_info.csv")
-        const parkInfoText = await parkInfoResponse.text()
-        const parkInfoParsed = Papa.parse<ParkInfo>(parkInfoText, {
-          header: true,
-          skipEmptyLines: true,
-        })
-        const parks = parkInfoParsed.data as ParkInfo[]
-
-        const loadParkData = async (parkList: ParkInfo[]) => {
-          const parkData = await Promise.all(
-            parkList.map(async (park) => {
-              const response = await fetch(`/data/${park.park_name}.csv`)
-              const text = await response.text()
-              const parsed = Papa.parse<EnergyReading>(text, {
-                header: true,
-                skipEmptyLines: true,
-                dynamicTyping: true,
-              })
-              return parsed.data
-            })
-          )
-          return parkData.flat()
-        }
-
         if (allParksMode) {
-          const solarParks = parks.filter((park) => park.energy_type === "Solar")
-          const windParks = parks.filter((park) => park.energy_type === "Wind")
-
-          if (allParksMode === "solar") {
-            const solarData = await loadParkData(solarParks)
-            const aggregated = aggregateHourly(solarData, "solar")
-            setParkName("All Parks")
-            setChartData(aggregated as { date: string; solar: number }[])
-            setTimeRanges(buildTimeRangesFromDates(aggregated.map((item) => item.date)))
-            return
-          }
-
-          if (allParksMode === "wind") {
-            const windData = await loadParkData(windParks)
-            const aggregated = aggregateHourly(windData, "wind")
-            setParkName("All Parks")
-            setChartData(aggregated as { date: string; wind: number }[])
-            setTimeRanges(buildTimeRangesFromDates(aggregated.map((item) => item.date)))
-            return
-          }
-
-          const [solarData, windData] = await Promise.all([
-            loadParkData(solarParks),
-            loadParkData(windParks),
-          ])
-          const solarAggregated = aggregateHourly(solarData, "solar")
-          const windAggregated = aggregateHourly(windData, "wind")
-          const combinedMap = new Map<string, { date: string; solar?: number; wind?: number }>()
-
-          solarAggregated.forEach((item) => {
-            combinedMap.set(item.date, { date: item.date, solar: item.solar as number })
-          })
-          windAggregated.forEach((item) => {
-            const existing = combinedMap.get(item.date) ?? { date: item.date }
-            combinedMap.set(item.date, { ...existing, wind: item.wind as number })
-          })
-
-          const combined = Array.from(combinedMap.values()).sort((a, b) => a.date.localeCompare(b.date))
-          setParkName("All Parks")
-          setChartData(combined)
-          setTimeRanges(buildTimeRangesFromDates(combined.map((item) => item.date)))
+          const response = await fetch(`/api/energy?mode=all&metric=${allParksMode}`)
+          const payload = await response.json()
+          setParkName(payload.parkName ?? "All Parks")
+          setChartData(payload.data ?? [])
+          setTimeRanges(buildTimeRangesFromDates((payload.data ?? []).map((item: { date: string }) => item.date)))
           return
         }
 
-        const targetPark = parks.find((park) => park.park_name === selectedPark)
-        if (!targetPark || !selectedMetric) return
-        if (
-          (selectedMetric === "solar" && targetPark.energy_type !== "Solar") ||
-          (selectedMetric === "wind" && targetPark.energy_type !== "Wind")
-        ) {
-          setParkName("")
-          setChartData([])
-          setTimeRanges([])
-          return
-        }
-
-        setParkName(targetPark.park_name)
-
-        const parkResponse = await fetch(`/data/${targetPark.park_name}.csv`)
-        const parkText = await parkResponse.text()
-        const parkParsed = Papa.parse<EnergyReading>(parkText, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true,
-        })
-
-        const aggregated = aggregateHourly(parkParsed.data, selectedMetric)
-        setChartData(aggregated as { date: string; solar?: number; wind?: number }[])
-        setTimeRanges(buildTimeRangesFromDates(aggregated.map((item) => item.date)))
+        if (!selectedPark || !selectedMetric) return
+        const response = await fetch(
+          `/api/energy?mode=park&metric=${selectedMetric}&park=${encodeURIComponent(selectedPark)}`
+        )
+        const payload = await response.json()
+        setParkName(payload.parkName ?? selectedPark)
+        setChartData(payload.data ?? [])
+        setTimeRanges(buildTimeRangesFromDates((payload.data ?? []).map((item: { date: string }) => item.date)))
       } catch (error) {
         console.error("Failed to load park data", error)
       } finally {
