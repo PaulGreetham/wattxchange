@@ -28,12 +28,12 @@ const data = {
       plan: "Internal Dashboard",
     },
     {
-      name: "WattXchange #2",
+      name: "WattXchange 2",
       logo: Zap,
       plan: "Internal Dashboard",
     },
     {
-      name: "WattXchange #3",
+      name: "WattXchange 3",
       logo: Zap,
       plan: "Internal Dashboard",
     },
