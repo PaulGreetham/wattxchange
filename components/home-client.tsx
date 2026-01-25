@@ -9,6 +9,7 @@ import { type DateTimeRangeValue } from "@/components/filters/date-time-range-pi
 import { EnergyDataTable } from "@/components/tables/energy-data-table"
 import { ModeToggle } from "@/components/mode-toggle"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { applyDateTimeRangeFilter, applyTimeRangeFilter, buildTimeRangesFromDates } from "@/lib/charts/utils"
 import { colors } from "@/lib/design"
@@ -36,6 +37,7 @@ export function HomeClient() {
 
   React.useEffect(() => {
     async function loadPark() {
+      const startedAt = Date.now()
       const selectedSolarPark = solarHashToPark[activeKey]
       const selectedWindPark = windHashToPark[activeKey]
       const allParksMode = allParksHashToMode[activeKey]
@@ -72,6 +74,10 @@ export function HomeClient() {
       } catch (error) {
         console.error("Failed to load park data", error)
       } finally {
+        const elapsed = Date.now() - startedAt
+        if (elapsed < 1000) {
+          await new Promise((resolve) => setTimeout(resolve, 1500 - elapsed))
+        }
         setLoading(false)
       }
     }
@@ -101,7 +107,15 @@ export function HomeClient() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {solarHashToPark[activeKey] || windHashToPark[activeKey] || allParksHashToMode[activeKey] ? (
-            loading ? null : chartData.length ? (
+            loading ? (
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Skeleton className="h-5 w-56" />
+                  <Skeleton className="h-4 w-72" />
+                </div>
+                <Skeleton className="h-[360px] w-full rounded-lg" />
+              </div>
+            ) : chartData.length ? (
               <div className="space-y-6">
                 <EnergyAreaChart
                   title={
